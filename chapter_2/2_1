@@ -1,4 +1,6 @@
 #lang scheme
+
+;"Rational numbers procedures"
 (define (add-rat x y)
   (make-rat (+ (* (numer x) (denom y))
                (* (numer y) (denom x)))
@@ -10,7 +12,7 @@
             (* (denom x) (denom y))))
 
 (define (mult-rat x y)
-  (make-rat (* (numer x) (numer y))
+ (make-rat (* (numer x) (numer y))
             (* (denom x) (denom y))))
 
 (define (div-rat x y)
@@ -18,5 +20,286 @@
             (* (denom x) (numer y))))
 
 (define (equal-rat? x y)
-  (== (* (numer x) (denom y))
-      (* (denom x) (numer y))))
+  (= (* (numer x) (denom y))
+     (* (denom x) (numer y))))
+
+
+
+;"Pairs"
+;(define x (cons 1 2))
+;(car x)
+;(cdr x)
+
+
+
+;"Rational numbers defenition"
+;(define (make-rat n d) (cons n d))
+(define (gcd a b)
+  (if (= b 0)
+      a
+      (gcd b (remainder a b))))
+(define (abs x)
+  (if (< x 0)
+      (- x)
+      x))
+(define (sign x)
+  (if (< x 0)
+      -1
+      1))
+(define (make-rat n d)
+  (let ((g (abs (gcd n d))))
+    (cons (* (/ n g) (sign d))
+          (abs (/ d g)))))
+
+(define (numer x) (car x))
+
+(define (denom x) (cdr x))
+
+(define (print-rat x)
+  (newline)
+  (display (numer x))
+  (display "/")
+  (display (denom x)))
+
+(define one-half (make-rat 1 2))
+
+;(print-rat one-half)
+
+(define one-third (make-rat 1 3))
+
+;(print-rat (add-rat one-half one-third))
+;(print-rat (mult-rat one-half one-third))
+;(print-rat (add-rat one-third one-third))
+
+
+;exercise 2.2
+(define (make-point x y)
+  (cons x y))
+(define (x-point p)
+  (car p))
+(define (y-point p)
+  (cdr p))
+
+(define (make-segment a b)
+  (cons a b))
+(define (start-segment s)
+  (car s))
+(define (end-segment s)
+  (cdr s))
+
+(define (mid-point-segment s)
+  (make-point (/ (+ (x-point (start-segment s))
+                    (x-point (end-segment s)))
+                 2)
+              (/ (+ (y-point (start-segment s))
+                    (y-point (end-segment s)))
+                 2)))
+
+(define (print-point p)
+  (newline)
+  (display "(")
+  (display (x-point p))
+  (display ",")
+  (display (y-point p))
+  (display ")"))
+
+;(define a-point
+;  (make-point 1.0 2.0))
+;(define b-point
+;  (make-point 4.0 8.0))
+;(define test-segment
+;  (make-segment a-point b-point))
+;(define mid-point-result
+;  (mid-point-segment test-segment))
+;(print-point a-point)
+;(print-point b-point)
+;(print-point mid-point-result)
+
+
+;Exercise 2.3
+(define (average a b)
+  (/ (+ a b) 2))
+(define (square a)
+  (* a a ))
+(define tolerance 0.00001)
+
+(define (fixed-point f first-guess)
+  (define (close-enough? v1 v2)
+    (< (abs (- v1 v2)) tolerance))
+  (define (try guess)
+    (let ((next (f guess)))
+      (if (close-enough? guess next)
+        next
+        (try next))))
+  (try first-guess))
+  
+(define (sqrt x)
+  (fixed-point (lambda (y) (average y (/ x y))) 1.0))
+
+(define (distance l)
+  (sqrt (+ (square (- (x-point (end-segment l))
+                      (x-point (start-segment l))))
+           (square (- (y-point (end-segment l))
+                      (y-point (start-segment l)))))))
+
+(define (rectangle a-point c-point)
+  (define b-point
+    (make-point (x-point c-point)
+                              (y-point a-point)))
+  (define length
+    (make-segment a-point
+                  b-point))
+  (define width
+    (make-segment b-point
+                  c-point))
+  (cons length width))
+(define (length rectangle)
+  (car rectangle))
+(define (width rectangle)
+  (cdr rectangle))
+(define (perimeter rectangle)
+  (* 2 (+ (distance (length rectangle))
+          (distance (width rectangle)))))
+(define (area rectangle)
+  (* (distance (length rectangle))
+     (distance (width rectangle))))
+
+
+;(define a-point
+;  (make-point 4 3))
+;(define c-point
+;  (make-point 11 7))
+;(define test-rectangle
+;  (rectangle a-point c-point))
+;(perimeter test-rectangle)
+;(area test-rectangle)
+
+
+;exercise 2.4
+;(define (cons x y)
+;  (lambda (m) (m x y)))
+;(define (car z)
+;  (z (lambda (p q) p)))
+;(define (cdr z)
+;  (z (lambda (p q) q)))
+
+(define (fast-expt b n)
+  (define (fast-expt-iter a b n)
+    (if (= n 0)
+        a
+        (if (even? n)
+            (fast-expt-iter a (square b) (/ n 2))
+            (fast-expt-iter (* a b) b (- n 1)))))
+  (fast-expt-iter 1 b n))
+  
+
+
+;(define (new-cons a b)
+;  (* (fast-expt 2 a)
+;     (fast-expt 3 b)))
+;(define (new-car x)
+;  (define (car-iter x count)
+;    (if (not (= (remainder x 2) 0))
+;        count
+;        (car-iter (/ x 2) (+ count 1))))
+;  (car-iter x 0))
+;(define (new-cdr x)
+;  (define (cdr-iter x count)
+;    (if (not (= (remainder x 3) 0))
+;        count
+;        (cdr-iter (/ x 3) (+ count 1))))
+;  (cdr-iter x 0))
+
+;(new-cons 5 2)
+;(new-car (new-cons 118 221))
+;(new-cdr (new-cons 118 221))
+
+(define zero (lambda (f) (lambda (x) x)))
+
+(define (add-1 n)
+  (lambda (f) (lambda (x) (f (n f) x))))
+
+;(add-1 zero)
+
+;2.1.4
+(define (make-interval a b) (cons a b))
+(define (lower-bound x) (car x))
+(define (upper-bound x) (cdr x))
+
+(define (add-interval x y)
+  (make-interval (+ (lower-bound x) (lower-bound y))
+                 (+ (upper-bound x) (upper-bound y))))
+
+(define (sub-interval x y)
+  (make-interval (- (lower-bound x) (upper-bound y))
+                 (- (upper-bound x) (lower-bound y))))
+
+(define (mul-interval x y)
+  (let ((p1 (* (lower-bound x) (lower-bound y)))
+        (p2 (* (lower-bound x) (upper-bound y)))
+        (p3 (* (upper-bound x) (lower-bound y)))
+        (p4 (* (upper-bound x) (upper-bound y))))
+    (make-interval (min p1 p2 p3 p4)
+                   (max p1 p2 p3 p4))))
+
+(define (div-interval x y)
+  (mul-interval x
+                (make-interval (/ 1.0 (upper-bound y))
+                               (/ 1.0 (lower-bound y)))))
+(define (div-interval-new x y)
+  (define divisor-interval
+    (make-interval (/ 1.0 (upper-bound y))
+                               (/ 1.0 (lower-bound y))))
+  (if (and (or (< (lower-bound divisor-interval) 0) (= (lower-bound divisor-interval) 0))
+           (or (> (upper-bound divisor-interval) 0)) (= (upper-bound divisor-interval) 0))
+      (error "Dividing by zero")
+      (mul-interval x divisor-interval)))
+
+(define (make-center-width c w)
+  (make-interval (- c w) (+ c w)))
+(define (center i)
+  (/ (+ (lower-bound i) (upper-bound i)) 2))
+(define (width-interval i)
+  (/ (- (upper-bound i) (lower-bound i)) 2))
+
+(define (make-center-percent center percent)
+  (make-interval (- center (/ center percent))
+                 (+ center (/ center percent))))
+(define (percent interval)
+  (* (/ (width-interval interval)
+        (center interval))
+     100))
+
+;(define test (make-center-percent 6.8 10))
+;(upper-bound test)
+;(lower-bound test)
+;(center test)
+;(percent test)
+
+;2.14
+(define  (par1 r1 r2)
+  (div-interval (mul-interval r1 r2)
+                (add-interval r1 r2)))
+(define (par2 r1 r2)
+  (let ((one (make-interval 1 1)))
+    (div-interval one
+                  (add-interval (div-interval one r1)
+                                (div-interval one r2)))))
+
+
+(define test-int-1 (make-interval 1000 1001))
+(define test-int-2 (make-interval 1005 1007))
+(define test1 (par1 test-int-1 test-int-2))
+(define test2 (par2 test-int-1 test-int-2))
+(define answer-1 (make-center-percent (center test1)
+                                      (percent test1)))
+;(define answer-2 (make-center-percent (center test2)
+;                                      (percent test2)))
+
+(width-interval answer-1)
+;answer-2
+
+
+
+     
+             
