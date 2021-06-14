@@ -46,4 +46,178 @@
   (if (or (null? items))
       (list )
       (cons (last-pair items) (reverse (bf items)))))
-(reverse (list 1 4 9 16 25))
+;(reverse (list 1 4 9 16 25))
+
+
+;2.19
+
+;(define (count-change amount)
+;  (cc amount 5))
+
+;(define (cc amount kinds-of-coins)
+;  (cond ((= amount 0) 1)
+;        ((or (< amount 0) (= kinds-of-coins 0)) 0)
+;        (else (+ (cc amount
+;                     (- kinds-of-coins 1))
+;                 (cc (- amount
+;                        (first-denomination kinds-of-coins))
+;                     kinds-of-coins)))))
+
+;(define (first-denomination kinds-of-coins)
+;  (cond ((= kinds-of-coins 1) 1)
+;        ((= kinds-of-coins 2) 5)
+;        ((= kinds-of-coins 3) 10)
+;       ((= kinds-of-coins 4) 25)
+;       ((= kinds-of-coins 5) 50)))
+
+;(count-change 100)
+
+(define (cc amount coin-values)
+  (define (no-more? coin-values)
+    (= (length coin-values) 0))
+  (define (except-first-denomination coin-values)
+    (cdr coin-values))
+  (define (first-denomination coin-values)
+    (car coin-values))
+  
+  (cond ((= amount 0) 1)
+        ((or (< amount 0) (no-more? coin-values)) 0)
+        (else
+         (+ (cc amount
+                (except-first-denomination coin-values))
+            (cc (- amount
+                   (first-denomination coin-values))
+                coin-values)))))
+
+(define us-coins (list 50 25 10 5 1))
+(define uk-coins (list 100 50 20 10 5 2 1 0.5))
+
+;(cc 100 (reverse us-coins))
+;(cc 100 uk-coins)
+;(cc 100 (reverse uk-coins))
+
+
+;2.20
+(define (same-parity x . y)
+  (define parity (remainder x 2))
+  (define (sub-list y)
+    (cond ((null? y) (list ))
+          ((= (remainder (car y) 2) parity) (cons (car y) (sub-list (cdr y))))
+          (else (sub-list (cdr y)))))
+  (cons x (sub-list y)))
+
+;(same-parity 1 2 3 4 5 6 7 8 9 10 11 12)
+;(same-parity 2 3 4 5 6 7 8 9 10 11 12)
+
+
+;(define (scale-list items factor)
+;  (if (null? items)
+;      null
+;     (cons (* (car items) factor)
+;           (scale-list (cdr items) factor))))
+;(scale-list (list 1 2 3 4 5) 10)
+(define (map proc items)
+  (if (null? items)
+      null
+      (cons (proc (car items))
+            (map proc (cdr items)))))
+;(map abs (list -10 2.5 -11.6 17))
+;(map (lambda (x) (* x x))
+;     (list 1 2 3 4 5 6))
+(define (scale-list items factor)
+  (map (lambda (x) (* x factor))
+       items))
+;(scale-list (list 1 2 3 4 5) 10)
+
+;2.21
+(define square (lambda (x) (* x x)))
+(define (square-list items)
+  (if (null? items)
+      null
+      (cons (square (car items))
+            (cdr (items)))))
+(define (square-list-1 items)
+  (map (lambda (x) (* x x))
+       items))
+
+;2.22
+(define (square-list-2 items)
+  (define (iter things answer)
+    (if (null? things)
+        answer
+        (iter (cdr things)
+              (cons (square (car things))
+                    answer))))
+  (iter items null))
+;(square-list-2 (list 1 2 3 4 5))
+
+
+(define (square-list-3 items)
+  (define (iter things answer)
+    (if (null? things)
+        answer
+        (iter (cdr things)
+              (append answer
+                    (list (square (car things)))))))
+  (iter items null))
+;(square-list-3 (list 1 2 3 4 5))
+
+
+;2.23
+(define (last-element? list)
+  (null? (cdr list)))
+(define (for-each proc items)
+  (if (null? items)
+      true
+      (and (proc (car items))
+           (for-each proc (cdr items)))))
+;(for-each (lambda (x) (newline) (display x))
+;          (list 57 321 88))
+
+
+
+
+;Hierarchical data structures
+
+
+(define test-tree (cons (list 1 2) (list 3 4)))
+
+;(length test-tree)
+
+(define (count-leaves tree)
+  (cond ((null? tree) 0)
+        ((not (pair? tree)) 1)
+        (else (+ (count-leaves (car tree))
+                 (count-leaves (cdr tree))))))
+
+;(count-leaves test-tree)
+
+;2.24
+;(list 1 (list 2 (list 3 4)))
+
+;2.25
+(define 25-list `((1 3 (5 7) 9)
+                  ((7))
+                  (1 (2 (3 (4 (5 (6 7))))))))
+                  
+;(car (car (car (cdr 25-list))))
+
+;2.26
+;(define x (list 1 2 3))
+;(define y (list 4 5 6))
+;(append x y)
+;(cons x y)
+;(list x y)
+
+;2.27
+
+(define (deep-reverse items)
+  (cond ((null? items) `())
+        ((or (not (pair? (car items))) (not (pair? (cdr items)))) (reverse items))
+        (else (reverse (list (deep-reverse (car items))
+                             (deep-reverse (cdr items)))))))
+
+(define x (list (list 1 2) (list 3 4) (list 5 6 7)))
+x
+(reverse x)
+(deep-reverse x)
