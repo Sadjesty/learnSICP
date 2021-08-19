@@ -218,6 +218,81 @@
                              (deep-reverse (cdr items)))))))
 
 (define x (list (list 1 2) (list 3 4) (list 5 6 7)))
-x
-(reverse x)
-(deep-reverse x)
+
+(define (filter predicate sequence)
+  (cond ((null? sequence) null)
+        ((predicate (car sequence))
+         (cons (car sequence)
+                    (filter predicate (cdr sequence))))
+        (else (filter predicate (cdr sequence)))))
+
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (accumulate op initial (cdr sequence)))))
+
+(define (flatmap proc seq)
+  (accumulate append
+              null
+              (map proc seq)))
+
+(define  (enumerate-interval low high)
+  (if (> low high)
+      null
+      (cons low (enumerate-interval (+ low 1) high))))
+
+(define (prime-sum? pair)
+  (prime? (+ (car pair) (cadr pair))))
+
+(define (make-pair-sum pair)
+  (list (car pair) (cadr pair) (+ (car pair) (cadr pair))))
+
+(define (smallest-divisor n)
+  (find-divisor n 2))
+
+(define (find-divisor n test-divisor)
+  (cond ((> (square test-divisor) n)
+         n)
+        ((divides? test-divisor n)
+         test-divisor)
+        (else (find-divisor
+               n
+               (+ test-divisor 1)))))
+
+(define (divides? a b)
+  (= (remainder b a) 0))
+
+(define (prime? n)
+  (= n (smallest-divisor n)))
+
+(define (prime-sum-pairs n)
+  (map make-pair-sum
+       (filter prime-sum?
+               (flatmap
+                (lambda (i)
+                  (map (lambda (j) (list i j))
+                       (enumerate-interval 1 (- i 1))))
+                (enumerate-interval 1 n)))))
+
+(prime-sum-pairs 6)
+
+
+;(define (queens board-size)
+;  (define (queen-cols k)
+;    (if (= k 0)
+;        (list empty-board)
+;        (filter
+;         (lambda (positions) (safe? k positions))
+;         (flatmap
+;          (lambda (rest-of-queens)
+;           (map (lambda (new-row)
+;                  (adjoin-position new-row k rest-of-queens))
+;                (enumerate-interval 1 board-size)))
+;         (queen-cols (- k 1))))))
+;  (queen-cols board-size))
+
+(define empty-board null)
+
+(define (safe? positions) true)
+
