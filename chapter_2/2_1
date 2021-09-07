@@ -24,7 +24,6 @@
      (* (denom x) (numer y))))
 
 
-
 ;"Pairs"
 ;(define x (cons 1 2))
 ;(car x)
