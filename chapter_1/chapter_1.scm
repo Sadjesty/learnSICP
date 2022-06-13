@@ -1,97 +1,281 @@
 #lang scheme
-486
+;486
 
-(+ 137 349)
-(- 1000 334)
-(* 5 99)
-(/ 10 5)
-(+ 2.7 10)
+;(+ 137 349)
+;(- 1000 334)
+;(* 5 99)
+;(/ 10 5)
+;(+ 2.7 10)
 
-(+ 21 35 12 7)
-(* 25 4 12)
+;(+ 21 35 12 7)
+;(* 25 4 12)
 
-(+ (* 3 5) (- 10 6))
-(+ (* 3
-      (+ (* 2 4)
-         (+ 3 5)))
-   (+ (- 10 7)
-      6))
+;(+ (* 3 5) (- 10 6))
+;(+ (* 3
+;      (+ (* 2 4)
+;         (+ 3 5)))
+;   (+ (- 10 7)
+;      6))
 
 (define size 2)
-(* size 2)
+;(* size 2)
 
 (define pi 3.14159)
 (define radius 10)
-(* pi (* radius radius))
+;(* pi (* radius radius))
 (define circumference (* 2 pi radius))
-circumference
+;circumference
 
 (define (square x) (* x x))
-(square 21)
+;(square 21)
 (define (sum-of-squares x y)
-  (+ (square x) (square y)))
-(sum-of-squares 3 4)
+    (+ (square x) (square y)))
+;(sum-of-squares 3 4)
 (define (f a)
-  (sum-of-squares (+ a 1) (+ a 2)))
-(f 5)
+    (sum-of-squares (+ a 1) (+ a 2)))
+;(f 5)
 
 (define (abs x)
-  (cond ((< x 0) (- x))
-        (else x)))
+    (cond ((< x 0) (- x))
+      (else x)))
 
-(define (square x) (* x x))
-(define (sum-of-squares a b)
-  (+ (square a) (square b)))
 (define (sum-of-two-bigger-numbers a b c)
-  (if (> a b)
-      (if (> b c)
-          (sum-of-squares a b)
-          (sum-of-squares a c))
-      (if (> a c)
-          (sum-of-squares a b)
-          (sum-of-squares b c))))
+    (if (> a b)
+        (if (> b c)
+            (sum-of-squares a b)
+              (sum-of-squares a c))
+          (if (> a c)
+              (sum-of-squares a b)
+                (sum-of-squares b c))))
 
 
 (define (sqrt-iter guess x)
-  (if (good-enough? guess x)
-      guess
-      (sqrt-iter (improve guess x)
-                 x)))
+    (if (good-enough? guess x)
+        guess
+          (sqrt-iter (improve guess x)
+            x)))
 (define (improve guess x)
-  (average guess (/ x guess)))
+    (average guess (/ x guess)))
 (define (average x y)
-  (/ (+ x y) 2))
+    (/ (+ x y) 2))
 (define (good-enough? guess x)
-  (< (abs (- (square guess) x)) 0.001))
+    (< (abs (- (square guess) x)) 0.001))
 (define (sqrt x)
-  (sqrt-iter 1.0 x))
+    (sqrt-iter 1.0 x))
 
-(define (improve-cube guess x)
-  (/ (+ (/ x
-           (square guess))
-        (* 2 guess))
-     3))
-(define (cube-iter guess x)
-  (define new-guess (improve-cube guess x))
-  (if (alt-good-enough? guess new-guess)
-      guess
-      (cube-iter new-guess x)))
-(define (cube-root x)
-  (cube-iter 1.0 x))
 
 ;1.2
 
 
 (define (factorial n)
-  (if (= n 1)
-      1
-      (* n (factorial (- n 1)))))
+    (if (= n 1)
+        1
+          (* n (factorial (- n 1)))))
 (define (factorial-i n)
-  (define (fact-iter product counter max-count)
-    (if (> counter max-count)
-        product
-        (fact-iter (* product counter)
-                   (+ counter 1)
-                   max-count)))
-  (fact-iter 1 1 n))
+    (define (fact-iter product counter max-count)
+        (if (> counter max-count)
+            product
+              (fact-iter (* product counter)
+                (+ counter 1)
+                max-count)))
+      (fact-iter 1 1 n))
+
+(define (smallest-divisor n)
+    (define (find-divisor n test-divisor)
+        (cond ((> (square test-divisor) n) n)
+          ((divides? test-divisor n) test-divisor)
+          (else (find-divisor n (next test-divisor)))))
+      (define (divides? a b)
+          (= (remainder b a) 0))
+      (define (next a)
+          (if (= a 2)
+              3
+                (+ a 2)))
+      (find-divisor n 2))
+(define (prime? n)
+    (= n (smallest-divisor n)))
+
+(define (expmod base exp m)
+    (cond ((= exp 0) 1)
+      ((even? exp)
+        (remainder (square (expmod base (/ exp 2) m))
+          m))
+      (else
+        (remainder (* base (expmod base (- exp 1) m))
+          m))))
+(define (fermat-test n)
+    (define (try-it a)
+        (= (expmod a n n) a))
+      (try-it (+ 1 (random (- n 1)))))
+(define (fast-prime? n times)
+    (cond ((= times 0) true)
+      ((fermat-test n) (fast-prime? n (- times 1)))
+      (else false)))
+
+(define (runtime)
+    (current-milliseconds))
+(define (timed-prime-test n)
+    (start-prime-test n (runtime)))
+(define (start-prime-test n start-time)
+    (if (fast-prime? n 10000)
+        (report-prime n (- (runtime) start-time))
+          false))
+(define (report-prime n elapsed-time)
+    (display n)
+      (display " *** ")
+      (display elapsed-time)
+      (display "\n"))
+
+(define (get-all-primes-in-range a b)
+    (timed-prime-test a)
+      (if (= a b)
+          (display "END\n")
+            (get-all-primes-in-range (+ a 1) b)))
+
+
+
+;1.3
+
+(define (cube x) (* x x x))
+
+;(define (sum-integers a b)
+;  (if (> a b)
+;      0
+;      (+ a (sum-integers (+ a 1) b))))
+
+;(define (sum-cubes a b)
+;  (if (> a b)
+;      0
+;      (+ (cube a) (sum-cubes (+ a 1) b))))
+
+;(define (pi-sum a b)
+;  (if (> a b)
+;     0
+;      (+ (/ 1.0 (* a (+ a 2))) (pi-sum (+ a 4) b))))
+
+(define (sum term a next b)
+    (if (> a b)
+        0
+          (+ (term a)
+            (sum term (next a) next b))))
+
+(define (inc n) (+ n 1))
+
+(define (sum-cubes a b)
+    (sum cube a inc b))
+;(sum-cubes 1 10)
+
+(define (idenity x) x)
+
+(define (sum-integers a b)
+    (sum identity a inc b))
+;(sum-integers 1 10)
+
+(define (pi-sum a b)
+    (define (pi-term x)
+        (/ 1.0 (* x (+ x 2))))
+      (define (pi-next x)
+          (+ x 4))
+      (sum pi-term a pi-next b))
+;(* 8 (pi-sum 1 1000000))
+
+(define (integral f a b dx)
+    (define (add-dx x) (+ x dx))
+      (* (sum f (+ a (/ dx 2)) add-dx b)
+        dx))
+;(integral cube 0 1 0.01)
+;(integral cube 0 1 0.001)
+;(integral cube 0 1 0.000001)
+
+(define (simpson f a b n)
+    (define h (/ (- b a) n))
+      (define (y k) (f (+ a (* k h))))
+      (define (simpson-term k)
+          (cond ((= k 0) (y 0))
+            ((= k n) (y n))
+            ((even? k) (* 2 (y k)))
+            (else (* 4 (y k)))))
+      (* (/ h 3) (sum simpson-term 0 inc n)))
+;(integral cube 0 1 0.01)
+;(simpson cube 0 1.0 100)
+;(integral cube 0 1 0.001)
+;(simpson cube 0 1.0 1000)
+
+
+(define (sum-it term a next b)
+    (define (iter a result)
+        (if (> a b)
+            result
+              (iter (next a) (+ (term a) result))))
+      (iter a 0))
+
+
+(define (product term a next b)
+    (if (> a b)
+        1
+          (* (term a)
+            (product term (next a) next b))))
+
+(define (factorial-new n)
+    (product identity 1 inc n))
+;(factorial-new 5)
+(define (pi-divided-by-four n)
+    (define (term a)
+        (/ (* (- a 1.0) (+ a 1.0))
+          (square a)))
+      (define (next a)
+          (+ a 2))
+      (product term 3.0 next n))
+;(* (pi-divided-by-four 1000000) 4)
+
+(define (product-it term a next b)
+    (define (iter a result)
+        (if (> a b)
+            result
+              (iter (next a) (* (term a) result))))
+      (iter a 1))
+
+
+(define (accumulate combiner null-value term a next b)
+    (if (> a b)
+        null-value
+          (combiner (term a)
+            (accumulate combiner null-value term (next a) next b))))
+
+(define (accumulate-it combiner null-value term a next b)
+    (define (iter a result)
+        (if (> a b)
+            result
+              (iter (next a) (combiner (term a) result))))
+      (iter a null-value))
+
+
+(define (filtered-accumulate filter combiner null-value term a next b)
+    (cond ((> a b) null-value)
+      ((filter a) (combiner (term a)
+                    (filtered-accumulate filter combiner null-value term (next a) next b)))
+      (else (filtered-accumulate filter combiner null-value term (next a) next b))))
+(define (sum-of-prime a b)
+    (filtered-accumulate prime? + 0 identity a inc b))
+;(sum-of-prime 0 10)
+
+(define (f1 x y)
+    (let ((a (+ 1 (* x y)))
+           (b (- 1 y)))
+        (+ (* x (square a))
+          (* y b)
+          (* a b))))
+
+(define (f2 g)
+    (g 2))
+;(f2 square)
+;(f2 f2)
+
+
+
+
+
+
+
+
 

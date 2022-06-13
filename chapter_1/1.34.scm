@@ -1,0 +1,2 @@
+;F function is function that take another function and try to compute this functin with argment 2.
+;If we try to compute (f f) so compile will try to compute (2 2) and 2 is not a function so it will be comiler error

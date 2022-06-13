@@ -1,0 +1,8 @@
+(define (filtered-accumulate filter combiner null-value term a next b)
+    (cond ((> a b) null-value)
+      ((filter a) (combiner (term a)
+                    (filtered-accumulate filter combiner null-value term (next a) next b)))
+      (else (filtered-accumulate filter combiner null-value term (next a) next b))))
+(define (sum-of-prime a b)
+    (filtered-accumulate prime? + 0 identity a inc b))
+;(sum-of-prime 0 10)
