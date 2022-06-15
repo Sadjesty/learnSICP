@@ -272,7 +272,101 @@
 ;(f2 f2)
 
 
+;1.3.3
+(define (search f neg-point pos-point)
+    (define (close-enough? x y)
+        (< (abs (- x y)) 0.001))
+      (let ((midpoint (average neg-point pos-point)))
+          (if (close-enough? neg-point pos-point)
+              midpoint
+                (let ((test-value (f midpoint)))
+                    (cond ((positive? test-value)
+                            (search f neg-point midpoint))
+                      ((negative? test-value)
+                        (search f midpoint pos-point))
+                      (else midpoint))))))
 
+(define (half-interval-method f a b)
+    (let ((a-value (f a))
+           (b-value (f b)))
+        (cond ((and (negative? a-value) (positive? b-value))
+                (search f a b))
+          ((and (negative? b-value) (positive? a-value))
+            (search f b a))
+          (else
+            (error "У аргументов не разные знаки " a b)))))
+
+(define (fixed-point f first-guess)
+    (define tolerance 0.00001)
+      (define (close-enough? v1 v2)
+          (< (abs (- v1 v2)) tolerance))
+      (define (try guess)
+          (let ((next (f guess)))
+              (if (close-enough? guess next)
+                  next
+                    (try next))))
+      (try first-guess))
+
+(define golden-ratio
+    (fixed-point (lambda (x) (+ 1 (/ 1 x)))
+      1.0))
+;golden-ratio
+
+(define (fixed-point-printed f first-guess)
+    (define tolerance 0.00001)
+      (define (close-enough? v1 v2)
+          (< (abs (- v1 v2)) tolerance))
+      (define (try guess)
+          (let ((next (f guess)))
+              (newline)
+                (print next)
+                (if (close-enough? guess next)
+                    next
+                      (try next))))
+      (try first-guess))
+
+(define (solution-1.36 x)
+    (fixed-point-printed (lambda (x) (/ (log 1000) (log x))) 2.0))
+
+(define (solution-1.36-average x)
+    (fixed-point-printed (lambda (x) (average x (/ (log 1000) (log x)))) 2.0))
+
+;(solution-1.36 10)
+;(newline)
+;(solution-1.36-average 10)
+
+(define (cont-frac n d k)
+    (let ((n-val (n k))
+           (d-val (d k)))
+        (if (= k 0)
+            (+ d-val (/ n-val d-val))
+              (/ n-val
+                (+ d-val (cont-frac n d (- k 1)))))))
+(define (cont-frac-iter n d k)
+    (define (iter i)
+        (let ((n-val (n i))
+               (d-val (d i)))
+            (if (= i k)
+                (+ d-val (/ n-val d-val))
+                  (/ n-val
+                    (+ d-val (iter (+ i 1)))))))
+      (iter 0))
+
+;1.6180339887498948482
+;(/ 1.0 (cont-frac (lambda (i) 1.0)
+;           (lambda (i) 1.0)
+;           11))
+;(/ 1.0 (cont-frac-iter (lambda (i) 1.0)
+;           (lambda (i) 1.0)
+;           11))
+
+(cont-frac-iter (lambda (i) 1.0)
+  (lambda (i)
+      (cond ((= i 0) 1)
+        ((= i 1) 2)
+        ((= (remainder i 3) 1) (- i (- (/ i 3) 1)))
+        (else 1)))
+  10)
 
 
 
