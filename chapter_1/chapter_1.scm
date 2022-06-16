@@ -360,16 +360,66 @@
 ;           (lambda (i) 1.0)
 ;           11))
 
-(cont-frac-iter (lambda (i) 1.0)
-  (lambda (i)
-      (cond ((= i 0) 1)
-        ((= i 1) 2)
-        ((= (remainder i 3) 1) (- i (- (/ i 3) 1)))
-        (else 1)))
-  10)
+;(cont-frac-iter (lambda (i) 1.0)
+;  (lambda (i)
+;      (cond ((= i 0) 1)
+;        ((= i 1) 2)
+;        ((= (remainder i 3) 1) (- i (- (/ i 3) 1)))
+;        (else 1)))
+;  10)
 
 
 
+;1.3.4
+
+(define (average-damp f)
+    (lambda (x) (average x (f x))))
+
+(define (deriv g)
+    (define dx 0.00001)
+      (lambda (x)
+          (/ (- (g (+ x dx)) (g x))
+            dx)))
 
 
+(define (newton-transform g)
+    (lambda (x)
+        (- x (/ (g x) ((deriv g) x)))))
+(define (newtons-method g guess)
+    (fixed-point (newton-transform g) guess))
 
+(define (fixed-point-of-transform g transform guess)
+    (fixed-point (transform g) guess))
+(define (new-sqrt x)
+    (fixed-point-of-transform (lambda (y) (/ x y))
+      average-damp
+      1.0))
+
+
+(define (cubic a b c)
+    (lambda (x) (+ (cube x) (* a (square x)) (* b x) c)))
+;(newtons-method (cubic 0 0 -8) 1)
+
+(define (double f)
+    (lambda (x) (f (f x))))
+;(((double (double double)) inc) 5)
+
+(define (compose f g)
+    (lambda (x) (f (g x))))
+;((compose square inc) 6)
+
+(define (repeated f times)
+    (if (= times 1)
+        f
+          (compose f (repeated f (- times 1)))))
+;((repeated square 2) 5)
+
+(define (smooth f)
+    (define dx 0.00001)
+      (lambda (x) (/ (+ (f (- x dx))
+                       (f x)
+                       (f (+ x dx)))
+                    3)))
+
+(define (smooth-n f n)
+    ((repeated (lambda (x) (smooth x)) n) f))
